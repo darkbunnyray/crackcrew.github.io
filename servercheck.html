@@ -1,0 +1,137 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft Server Status</title>
+    <style>
+        @font-face { font-family: mc; src: url('1_Minecraft-Regular.otf'); }
+        body {
+            font-family: mc;
+            text-align: center;
+            background-color: #282c34;
+            color: #da61fb;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            margin-top: 50px;
+        }
+        .search-box {
+            margin-bottom: 20px;
+        }
+        .search-box input {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #da61fb;
+            border-radius: 4px;
+            width: 250px;
+        }
+        .search-box button {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #da61fb;
+            border-radius: 4px;
+            background-color: #da61fb;
+            color: #282c34;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .search-box button:hover {
+            background-color: #ae4dc9;
+        }
+        .server-info {
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid #da61fb;
+            border-radius: 5px;
+            background-color: #20232a;
+            color: #da61fb;
+            display: inline-block;
+            min-width: 300px;
+            text-align: left;
+        }
+        h1 {
+            margin-bottom: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Minecraft Server Status</h1>
+        <div class="search-box">
+            <input type="text" id="server-ip" style="font-family:mc;" placeholder="Enter Minecraft Server IP">
+            <button onclick="fetchServerStatus()"><span style="font-family:mc;">Get Server Status</span></button>
+        </div>
+        <div id="server-info" class="server-info">
+            <p>Enter a Minecraft server IP to get started.</p>
+        </div>
+    </div>
+    <center>
+        <h3>By MIMYC</h3>
+    </center>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+    const serverInfo = document.getElementById("server-info");
+
+    function displayData(data, container) {
+        container.innerHTML = "";
+        const list = document.createElement("ul");
+        
+        function createListItem(key, value) {
+            const listItem = document.createElement("li");
+            if (key === "icon") {
+                listItem.innerHTML = `<strong><span style="color:yellow; font-size:20px">${key}:</span></strong> <img src="${value}">`;
+            }
+            else {
+                listItem.innerHTML = `<strong><span style="color:yellow; font-size:20px">${key}:</span></strong> ${value}`;
+            }
+            list.appendChild(listItem);
+        }
+
+        for (const [key, value] of Object.entries(data)) {
+            if (typeof value === "object" && value !== null) {
+                const subList = document.createElement("ul");
+                for (const [subKey, subValue] of Object.entries(value)) {
+                    createListItem(subKey, subValue);
+                }
+                const listItem = document.createElement("li");
+                listItem.innerHTML = `<strong><span style="color:lightgreen; font-size:40px">${key}:</span></strong>`;
+                listItem.appendChild(subList);
+                list.appendChild(listItem);
+            } else {
+                createListItem(key, value);
+            }
+        }
+
+        container.appendChild(list);
+    }
+
+    window.fetchServerStatus = function() {
+        const serverIP = document.getElementById("server-ip").value;
+        if (!serverIP) {
+            serverInfo.innerHTML = "<p>Please enter a server IP.</p>";
+            return;
+        }
+        const apiUrl = `https://api.mcsrvstat.us/2/${serverIP}`;
+
+        fetch(apiUrl)
+            .then(response => response.json())
+            .then(data => {
+                if (data.online) {
+                    displayData(data, serverInfo);
+                } else {
+                    serverInfo.innerHTML = "<p>The server is offline.</p>";
+                }
+            })
+            .catch(error => {
+                console.error("Error fetching server data:", error);
+                serverInfo.innerHTML = "<p>Could not retrieve server information.</p>";
+            });
+    };
+});
+
+    </script>
+</body>
+</html>
